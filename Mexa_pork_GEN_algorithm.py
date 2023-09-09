@@ -102,22 +102,26 @@ def startSex(child1, child2):
 # Мутации
 
 
-def startMutation(mutant, word_characters, mutation_Probability=0.8):
+def startMutation(mutant, word_characters):
     #print("Вероятность равна = " + str(1/len(word)))
     #print("Мутант до " + str(mutant))
-    if (random.random() < mutation_Probability):  #
-        mutant = combinations(word_characters)[
-            random.randint(0, math.factorial(len(word_characters))-1)]
-    if (random.random() > mutation_Probability):
+    index = random.randint(0, len(word_characters)-1)
+    if (mutant[index] == word_characters[index]):
+        #print("Отдельный ген мутанта " + str(mutant[index]) + " равен случайной мутации " + str(word_characters[index]))
         random.shuffle(mutant)
-        #print("Мутант после " + str(mutant))
+    else:
+        #print("Отдельный ген мутанта " + str(mutant[index]) + " отличается от случайной мутации " + str(word_characters[index]))
+        mutant[index] = word_characters[index]
+    #print("Мутант после " + str(mutant))
 
 
 # конец ================
-# startMutation(population[0])
+#startMutation(combinations("forks")[ random.randint(0, math.factorial(len("forks"))-1)])
 
 # print(fitness_Values)
 # print(max(fitness_Values))
+
+
 def guesser(word):
     #word = "ahhhh"
 
@@ -227,7 +231,7 @@ def guesser(word):
         if (maxFitness <= len(word) - 1 and generationCounter >= generationThreshhold):
             for i in range(population_size):
                 # Если число поколений перевалило трешхолд, то с некоторой вероятностью заменяем некоторых членов на новичков
-                if (random.random() < 0.3):  # mutation_Probability
+                if (random.random() < 0.8):  # mutation_Probability
                     # print("================биба==============")
                     # print(population[i])
                     k = random.randint(0, math.factorial(len(word)) - 1)
@@ -262,7 +266,7 @@ def guesser(word):
 
 
     # конец ================
-guesser("forks")
+guesser("intel")
 #array_for_average = []
 #summA = 0
 #
