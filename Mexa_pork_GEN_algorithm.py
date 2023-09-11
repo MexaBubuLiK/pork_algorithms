@@ -63,6 +63,11 @@ def clone(value):
 
 def selTournament(population, population_size):
     offspring = []
+    print("===== Начался турнирный отбор ======")
+    print("====== Текущая популяция ======")
+    for i in range(population_size):
+        print("Индивид № " + str(i + 1) + " " + str(population[i]))
+    print("\n============== ИТОГИ ==============")
     for n in range(population_size):
         i1 = i2 = i3 = 0
         while i1 == i2 or i1 == i3 or i2 == i3:
@@ -71,6 +76,7 @@ def selTournament(population, population_size):
             i3 = random.randint(0, population_size-1)
         offspring.append(max(
             [population[i1], population[i2], population[i3]], key=lambda ind: ind.fitness))
+        print("Победитель № " + str(n + 1) + " " + str(offspring[n]))
     return offspring
 
 
@@ -82,14 +88,15 @@ def selTournament(population, population_size):
 
 def startSex(child1, child2):
     s = random.randint(1, len(child1)-1)
-    #print("Первый Чел до"+str(child1))
-    #print("Второй Чел до"+str(child2))
+    print("Первый Чел до "+str(child1))
+    print("Второй Чел до "+str(child2))
+    print("Точка хромосомного переноса = " + str(s))
     temp1 = child1[s:]
     temp2 = child2[s:]
     child1[s:] = temp2
     child2[s:] = temp1
-    #print("Первый Чел после"+str(child1))
-    #print("Второй Чел после"+str(child2))
+    print("Первый Чел после "+str(child1))
+    print("Второй Чел после "+str(child2) + "\n")
 # конец ================
 
 
@@ -103,27 +110,46 @@ def startSex(child1, child2):
 
 
 def startMutation(mutant, word_characters):
-    #print("Вероятность равна = " + str(1/len(word)))
-    #print("Мутант до " + str(mutant))
-    index = random.randint(0, len(word_characters)-1)
-    if (mutant[index] == word_characters[index]):
+    print("Мутант до " + str(mutant))
+    indexMutant = random.randint(0, len(word_characters)-1)
+    if (mutant[indexMutant] == word_characters[indexMutant]):  # word_characters
         #print("Отдельный ген мутанта " + str(mutant[index]) + " равен случайной мутации " + str(word_characters[index]))
         random.shuffle(mutant)
     else:
         #print("Отдельный ген мутанта " + str(mutant[index]) + " отличается от случайной мутации " + str(word_characters[index]))
-        mutant[index] = word_characters[index]
-    #print("Мутант после " + str(mutant))
+        mutant[indexMutant] = word_characters[indexMutant]  # alphabet
+    print("Мутант после " + str(mutant))
 
 
 # конец ================
+
+def startMutationSecond(mutant):
+    #print("Вероятность шафла равна = 0.2")
+    print("Мутант до " + str(mutant))
+    indexMutant = random.randint(0, len(mutant)-1)
+    index = random.randint(0, len(alphabet)-1)
+    while (mutant[indexMutant] == alphabet[index]):
+        index = random.randint(0, len(alphabet)-1)
+    mutant[indexMutant] = alphabet[index]
+    if (random.random() <= 0.2):
+        random.shuffle(mutant)
+        #print("Шафл сработал")
+    print("Мутант после " + str(mutant))
+
 #startMutation(combinations("forks")[ random.randint(0, math.factorial(len("forks"))-1)])
 
 # print(fitness_Values)
 # print(max(fitness_Values))
 
 
+def generateLetters(lenght):
+    array = []
+    for i in range(lenght):
+        array.append(alphabet[random.randint(0, len(alphabet)-1)])
+    return array
+
+
 def guesser(word):
-    #word = "ahhhh"
 
     population_size = 10
 
@@ -143,7 +169,11 @@ def guesser(word):
 
     array_seed = []
 
+    array_seed_second = []
+
     temp_str = ""
+
+    temp_seed = []
 
     word_characters = []
 
@@ -153,10 +183,12 @@ def guesser(word):
     for i in range(len(alphabet)):
         for j in range(len(word)):
             temp_str += alphabet[i]
+            temp_seed.append(alphabet[i])
         array_seed.append(temp_str)
+        array_seed_second.append(temp_seed)
         temp_str = ""
-#    конец ================
-# print(array_seed)
+        temp_seed = []
+    # конец ================
     # Вычисляем все существующие буквы для комбинаций
     for i in range(len(array_seed)):
         check_usage += 1
@@ -167,21 +199,17 @@ def guesser(word):
             # print(word_characters)
             break
 
+    print("\nСтартовая выборка популяции\n")
     # Создаём популяцию и записываем значения их приспособленности в массив приспособленностей
     for i in range(population_size):
-        # print((i*(math.factorial(len(word)-1)-1))+len(word)-1) Формула пиздеца
-        # print(Individual(combinations(word_characters)[i]))
         ind = Individual(combinations(word_characters)
                          [i*random.randint(9, 12)])
+        print("Индивидум № " + str(i + 1) + " " + str(ind))
         ind.fitness = check(ind, word)
-        # print(ind)
-        # print(ind.fitness)
         population.append(ind)
         fitness_Values.append(population[i].fitness)
     # конец ================
-# print(population)
-# print(fitness_Values)
-# Тут происходит генетический алгоритм как раз
+    # Тут происходит генетический алгоритм как раз
     if (max(fitness_Values) == len(word) and generationCounter == 0):
         print("=======================================")
 
@@ -198,22 +226,31 @@ def guesser(word):
         print("Количество итераций = " + str(check_usage +
               generationCounter * population_size) + "\n")
 
-        return check_usage
+        return check_usage + generationCounter * population_size
 
     while max(fitness_Values) < len(word) and generationCounter < max_Generations:  # max_Generations
         generationCounter += 1
         offspring = selTournament(population, population_size)
         offspring = list(map(clone, offspring))
-        # print(offspring)
-        # print("=======================================")
+
+        print("\n====== Случайный кроссинговер ======")
+
         for child1, child2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < crossover_Probability:  # crossover_Probability
+                print("Отобраны родители " + str(child1) + " и " + str(child2))
                 startSex(child1, child2)
-        # print(offspring)
 
-        for mutant in offspring:
+        for i in range(population_size):
+            print("Потомки № " + str(i + 1) + " " + str(offspring[i]))
+
+        print("\n====== Старт случайных мутаций ======")
+
+        for i in range(len(offspring)):
             if random.random() < mutation_Probability:  # mutation_Probability
-                startMutation(mutant, word_characters)
+                print("-----------------------------------")
+                print("Индивид № " + str(i+1) +
+                      " доброволец на мутацию - " + str(offspring[i]) + "\n")
+                startMutation(offspring[i], word_characters)
 
         for ind in offspring:
             #print("Челик " + str(ind) + " приспособленность ДО = " + str(ind.fitness))
@@ -221,25 +258,27 @@ def guesser(word):
             #print("Челик " + str(ind) + " приспособленность ПОСЛЕ = " + str(ind.fitness))
 
         population[:] = offspring
-        #print("Приспособленности до " + str(fitness_Values))
         fitness_Values = [ind.fitness for ind in population]
-        #print("Приспособленности после " + str(fitness_Values))
 
         maxFitness = max(fitness_Values)
         averageFitness = sum(fitness_Values) / population_size
+        print("\n")
+        for i in range(population_size):
+            print("Текущий индивид № " + str(i + 1) + " " + str(population[i]))
         # Доп мутации
         if (maxFitness <= len(word) - 1 and generationCounter >= generationThreshhold):
+            print("\n ===== Дополнительные индивиды для посева =====")
             for i in range(population_size):
                 # Если число поколений перевалило трешхолд, то с некоторой вероятностью заменяем некоторых членов на новичков
                 if (random.random() < 0.8):  # mutation_Probability
-                    # print("================биба==============")
-                    # print(population[i])
                     k = random.randint(0, math.factorial(len(word)) - 1)
                     # Проверка на то, что отличаются хромосомы между собой
                     while population[i] == Individual(combinations(word_characters)[k]):
                         k = random.randint(0, math.factorial(len(word)) - 1)
+                    print("Вырожденец " + str(population[i]))
                     population[i] = Individual(
                         combinations(word_characters)[k])
+                    print("Заменяется на " + str(population[i]) + "\n")
                     population[i].fitness = check(population[i], word)
                     fitness_Values[i] = population[i].fitness
 
@@ -259,14 +298,130 @@ def guesser(word):
         print("Худший индивидум = " + str(population[worst_index]))
 
         print("Количество итераций = " + str(check_usage +
+              generationCounter * population_size))
+        print("============== Конец текущего поколения ====================\n")
+        # Возвращаем количество итераций
+        if (maxFitness == len(word) or generationCounter == max_Generations):
+            return check_usage + generationCounter * population_size
+
+# Второй вариант с полностью рандомным посевом
+
+
+def guesser2(word):
+
+    population_size = 10
+
+    population = []
+
+    fitness_Values = []
+
+    generationCounter = 0
+
+    crossover_Probability = 0.9
+
+    mutation_Probability = 0.8
+
+    max_Generations = 10000
+
+    check_usage = 0
+
+    print("==================СТАРТ==================" + "\n")
+    # Создаём популяцию и записываем значения их приспособленности в массив приспособленностей
+    for i in range(population_size):
+        ind = Individual(generateLetters(len(word)))
+        #print("Индивид № " + str(i + 1) + str(ind))
+        ind.fitness = check(ind, word)
+        population.append(ind)
+        fitness_Values.append(population[i].fitness)
+    # конец ================
+    # Тут происходит генетический алгоритм как раз
+    if (max(fitness_Values) == len(word) and generationCounter == 0):
+        print("=======================================")
+
+        print("Поколение: " + str(generationCounter) + " Макс приспособ. = " + str(max(fitness_Values)
+                                                                                   ) + ", Средняя приспособ = " + str(sum(fitness_Values) / population_size))
+
+        best_index = fitness_Values.index(max(fitness_Values))
+
+        worst_index = fitness_Values.index(min(fitness_Values))
+        print("Лучший индивидум = " + str(population[best_index]))
+
+        print("Худший индивидум = " + str(population[worst_index]))
+
+        print("Количество итераций = " + str(check_usage +
               generationCounter * population_size) + "\n")
+
+        return check_usage + generationCounter * population_size
+
+    while max(fitness_Values) < len(word) and generationCounter < max_Generations:  # max_Generations
+        generationCounter += 1
+        offspring = selTournament(population, population_size)
+        offspring = list(map(clone, offspring))
+        print("\n====== Случайный кроссинговер ======")
+        for child1, child2 in zip(offspring[::2], offspring[1::2]):
+            if random.random() < crossover_Probability:  # crossover_Probability
+                print("Отобраны родители " + str(child1) + " и " + str(child2))
+                startSex(child1, child2)
+        # print(offspring)
+        for i in range(population_size):
+            print("Потомки № " + str(i + 1) + " " + str(offspring[i]))
+        print("\n====== Старт случайных мутаций ======")
+        for i in range(len(offspring)):
+            if random.random() < mutation_Probability:  # mutation_Probability
+                print("-----------------------------------")
+                print("Индивид № " + str(i+1) +
+                      " доброволец на мутацию - " + str(offspring[i]) + "\n")
+                startMutationSecond(offspring[i])
+
+        for ind in offspring:
+            #print("Челик " + str(ind) + " приспособленность ДО = " + str(ind.fitness))
+            ind.fitness = check(ind, word)
+            #print("Челик " + str(ind) + " приспособленность ПОСЛЕ = " + str(ind.fitness))
+
+        population[:] = offspring
+        fitness_Values = [ind.fitness for ind in population]
+
+        maxFitness = max(fitness_Values)
+        averageFitness = sum(fitness_Values) / population_size
+        print("\n")
+        for i in range(population_size):
+            print("Текущий индивид № " + str(i + 1) + " " + str(population[i]))
+        # Доп мутации
+        if (maxFitness <= len(word) - 1 and generationCounter >= max_Generations):  # max_Generations
+            for i in range(population_size):
+                # Если число поколений перевалило трешхолд, то с некоторой вероятностью заменяем некоторых членов на новичков
+                if (random.random() < 0.8):  # mutation_Probability
+                    population[i] = Individual(generateLetters(len(word)))
+                    population[i].fitness = check(population[i], word)
+                    fitness_Values[i] = population[i].fitness
+
+            maxFitness = max(fitness_Values)
+            averageFitness = sum(fitness_Values) / population_size
+            # print(population[i])
+
+        print("=======================================")
+
+        print("Поколение: " + str(generationCounter) + " Макс приспособ. = " +
+              str(maxFitness) + ", Средняя приспособ = " + str(averageFitness))
+
+        best_index = fitness_Values.index(max(fitness_Values))
+        worst_index = fitness_Values.index(min(fitness_Values))
+        print("Лучший индивидум = " + str(population[best_index]))
+
+        print("Худший индивидум = " + str(population[worst_index]))
+
+        print("Количество итераций = " + str(check_usage +
+              generationCounter * population_size))
+        print("============== Конец текущего поколения ====================\n")
         # Возвращаем количество итераций
         if (maxFitness == len(word) or generationCounter == max_Generations):
             return check_usage + generationCounter * population_size
 
 
     # конец ================
-guesser("intel")
+guesser("ruben")
+# guesser2("ruben")
+
 #array_for_average = []
 #summA = 0
 #
